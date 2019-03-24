@@ -67,7 +67,7 @@ class Failure extends Outcome {
   }
 }
 
-class Parser {
+export default class Parser {
 
   // action: Context => Outcome<A>
   constructor(action) {
@@ -122,7 +122,7 @@ class Parser {
 }
 
 
-class Context {
+export class Context {
   constructor(array, index = 0) {
     this.array = array;
     this.index = index;
@@ -166,7 +166,7 @@ Context.prototype[Context.iterator] = function() {
   return new Context(this.array, this.index);
 }
 
-function empty() {
+export function empty() {
   return new Parser(ctx => {
     let nextCtx = ctx[Context.iterator]();
     let result = nextCtx.next();
@@ -178,7 +178,7 @@ function empty() {
 }
 
 // ret: Parser<A, Context>
-function item() {
+export function item() {
   return new Parser(ctx => {
     let nextCtx = ctx[Context.iterator]();
     let result = nextCtx.next();
@@ -191,10 +191,8 @@ function item() {
 
 // f: A => boolean
 // ret: Parser<A, Context>
-function satisfy(f, failMsg = 'Did not satisfy predicate') {
+export function satisfy(f, failMsg = 'Did not satisfy predicate') {
   return item().chain(item => 
     f(item) ? Parser.of(item) : Parser.failure(failMsg)
   );
 }
-
-item().parse(Context.from([1, 2, 3])).forEach(console.log);
