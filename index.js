@@ -8,6 +8,9 @@ class IndexedArray {
 }
 
 class Outcome {
+  static of(result) {
+    return new Success(result);
+  }
   map(f) { mustImplement(); }
   forEach(f) { mustImplement(); }
   chain(f) { mustImplement(); }
@@ -80,20 +83,12 @@ export default class Parser {
     return this.action(Context.from(ctx)); 
   }
 
-  static makeSuccess(v, ctx) {
-    return new Success({ value: v, ctx });
-  }
-
-  static makeFailure(msg) {
-    return new Failure(msg);
-  }
-
-  static of(v) {
-    return new Parser(ctx => Parser.makeSuccess(v, ctx));
+  static of(value) {
+    return new Parser(ctx => Outcome.of({ value, ctx }));
   }
 
   static failure(msg) {
-    return new Parser(_ => Parser.makeFailure(msg));
+    return new Parser(_ => new Failure(msg));
   }
 
   // ret: Parser<A, Context>
@@ -106,7 +101,7 @@ export default class Parser {
   map(f) {
     return new Parser(ctx => 
       this.parse(ctx)
-          .chain(({ value, ctx }) => Parser.makeSuccess(f(value), ctx))
+          .chain(({ value, ctx }) => Outcome.of({ value: f(value), ctx }))
     );
   }
 
@@ -118,7 +113,7 @@ export default class Parser {
           .chain(({ value: a, ctx }) => 
             parser.parse(ctx)
                   .chain(({ value: f, ctx }) => 
-                    Parser.makeSuccess(f(a), ctx)))
+                    Outcome.of({ value: f(a), ctx })))
     );
   }
 
@@ -226,9 +221,9 @@ export function empty() {
     let nextCtx = ctx[Context.iterator]();
     let result = nextCtx.next();
     if (result.done) {
-      return Parser.makeSuccess(void 0, nextCtx);
+      return Outcome.of({ value: void 0, ctx: nextCtx });
     }
-    return Parser.makeFailure('list not empty');
+    return new Failure('list not empty');
   });
 }
 
@@ -238,9 +233,9 @@ export function item() {
     let nextCtx = ctx[Context.iterator]();
     let result = nextCtx.next();
     if (result.done) {
-      return Parser.makeFailure('list is empty');
+      return new Failure('list is empty');
     }
-    return Parser.makeSuccess(result.value, nextCtx);
+    return Outcome.of({ value: result.value, ctx: nextCtx });
   });
 }
 
