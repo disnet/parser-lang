@@ -14,38 +14,38 @@ class Outcome {
 }
 class Success extends Outcome {
 
-  constructor(value) {
+  constructor(result) {
     super();
     this.success = true;
-    this.value = value;
+    this.result = result;
   }
 
   // f: A => B
   // ret: Outcome<B>
   map(f) {
-    return new Success(f(this.value));
+    return new Success(f(this.result));
   }
 
   // f: A => void
   // ret: Outcome<A>
   forEach(f) {
-    f(this.value);
+    f(this.result);
     return this;
   }
 
   // f: A => Outcome<B>
   // ret: Outcome<B>
   chain(f) {
-    return f(this.value);
+    return f(this.result);
   }
 
 }
 class Failure extends Outcome {
 
-  constructor(msg) {
+  constructor(result) {
     super();
     this.success = false;
-    this.msg = msg;
+    this.result = result;
   }
 
   // f: A => B
@@ -106,8 +106,32 @@ export default class Parser {
   map(f) {
     return new Parser(ctx => 
       this.parse(ctx)
-          .map(({ value, ctx }) => Parser.makeSuccess(f(value), ctx))
+          .chain(({ value, ctx }) => Parser.makeSuccess(f(value), ctx))
     );
+  }
+
+  // parser: Parser<A => B, Context>
+  // ret: Parser<B, Context>
+  ap(parser) {
+    return new Parser(ctx =>
+      this.parse(ctx)
+          .chain(({ value: a, ctx }) => 
+            parser.parse(ctx)
+                  .chain(({ value: f, ctx }) => 
+                    Parser.makeSuccess(f(a), ctx)))
+    );
+  }
+
+  // other: Parser<A, Context>
+  // ret: Parser<A, Context>
+  alt(other) {
+    return new Parser(ctx => {
+      let outcome = this.parse(ctx);
+      if (!outcome.success) {
+        return other.parse(ctx);
+      }
+      return outcome;
+    });
   }
 
   // f: A => Parser<B, Context>
@@ -115,8 +139,7 @@ export default class Parser {
   chain(f) {
     return new Parser(ctx => 
       this.parse(ctx)
-          .map(({ value, ctx }) => ({ value: f(value), ctx }))
-          .chain(({ value, ctx }) => value.parse(ctx))
+          .chain(({ value, ctx }) => f(value).parse(ctx))
     );
   }
 }
@@ -195,4 +218,75 @@ export function satisfy(f, failMsg = 'Did not satisfy predicate') {
   return item().chain(item => 
     f(item) ? Parser.of(item) : Parser.failure(failMsg)
   );
+}
+
+// parser: Parser<A, Context>
+// ret: Parser<Array<A>, Context>
+export function many(parser) {
+  return parser.chain(x => 
+    many(parser).chain(xs => Parser.of(xs.concat(x)))
+  ).alt(Parser.of([]));
+}
+
+// parser: Parser<A, Context>
+// ret: Parser<Array<A>, Context>
+export function many1(parser) {
+  return parser.chain(x => 
+    many(parser).chain(xs => Parser.of(xs.concat(x)))
+  );
+}
+
+// parser: Parser<A, Context>
+// sep: Parser<B, Context>
+// ret: Parser<Array<A>, Context>
+export function sepBy1(parser, sep) {
+  return parser.chain(x => 
+    many1(sep.chain(() => parser.chain(y => Parser.of(y))))
+      .chain(xs => Parser.of(xs.concat(x)))
+  );
+}
+
+// parser: Parser<A, Context>
+// sep: Parser<B, Context>
+// ret: Parser<Array<A>, Context>
+export function sepBy(parser, sep) {
+  return sepBy1(parser, sep).alt(Parser.of([]));
+}
+
+// f: (A, B) => C
+// ret: (Parser<A, Context>, Parser<B, Context>) => Parser<C, Context>
+export function lift2(f) {
+  return (a, b) => a.chain(va => b.chain(vb => Parser.of(f(va, vb))));
+}
+
+// ...parser: Parser<A, Context>
+// ret: Parser<Array<A>, Context>
+export function sequence(...parsers) {
+  return parsers.reduce(
+    lift2((a, b) => a.concat(b)), 
+    Parser.of([])
+  );
+}
+
+// ...parser: Parser<A, Context>
+// ret: Parser<A, Context>
+export function disj(...parser) {
+  return parser.reduce((acc, p) => acc.alt(p));
+}
+
+// parser: Parser<A, Context>
+// op: Parser<(A, A) => A, Context>
+// ret: Parser<A, Context>
+export function infixl(parser, op) {
+  function rest(x) {
+    return op.chain(f => parser.chain(y => rest(f(x, y)))).alt(Parser.of(x));
+  }
+  return parser.chain(rest);
+}
+
+// parser: Parser<A, Context>
+// op: Parser<(A, A) => A, Context>
+// ret: Parser<A, Context>
+export function infixr(parser, op) {
+  return parser.chain(x => op.chain(f => infixr(parser, op).chain(y => Parser.of(f(x, y)))).alt(Parser.of(x)));
 }
