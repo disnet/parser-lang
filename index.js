@@ -129,6 +129,16 @@ export default class Parser {
     });
   }
 
+  // other: Parser<A, Context>
+  // ret: Parser<A, Context>
+  or(other) {
+    return this.alt(other);
+  }
+
+  then(other) {
+    return sequence(this, other).map(([fst, snd]) => snd);
+  }
+
   // f: A => Parser<B, Context>
   // ret: Parser<B, Context>
   chain(f) {
@@ -141,16 +151,26 @@ export default class Parser {
 
   // ret: Parser<Array<A>, Context>
   many() {
-    return this.chain(x => 
-      this.many().chain(xs => Parser.of(xs.concat(x)))
-    ).alt(Parser.of([]));
+    return between(this);
   }
 
+  // n: number >= 0
+  // max?: number >= 0
   // ret: Parser<Array<A>, Context>
-  many1() {
-    return this.chain(x => 
-      this.many().chain(xs => Parser.of(xs.concat(x)))
-    );
+  times(n, max = n) {
+    return between(this, n, max);
+  }
+
+  // n: number >= 0
+  // ret: Parser<Array<A>, Context>
+  atMost(n) {
+    return between(this, 0, n);
+  }
+
+  // n: number >= 0
+  // ret: Parser<Array<A>, Context>
+  atLeast(n) {
+    return between(this, n);
   }
 
   // sep: Parser<B, Context>
@@ -158,7 +178,7 @@ export default class Parser {
   sepBy1(sep) {
     return this.chain(x => 
       sep.chain(() => this.chain(y => Parser.of(y)))
-        .many1()
+        .atLeast(1)
         .chain(xs => Parser.of(xs.concat(x)))
     );
   }
@@ -285,4 +305,32 @@ export function infixl(parser, op) {
 // ret: Parser<A, Context>
 export function infixr(parser, op) {
   return parser.chain(x => op.chain(f => infixr(parser, op).chain(y => Parser.of(f(x, y)))).alt(Parser.of(x)));
+}
+
+export function token(ch) {
+  return satisfy(c => c === ch);
+}
+export function regex(re) {
+  return satisfy(c => re.test(c));
+}
+
+function between(parser, requiredLowerBound = 0, requiredUpperBound = Infinity) {
+  return new Parser(ctx => {
+    let matches = 0, values = [], nextCtx = ctx, lastCtx = ctx, value, success;
+    do {
+      ({ success, result: { value, ctx: nextCtx }} = parser.parse(nextCtx));
+      if (success) {
+        ++matches;
+        values.push(value);
+        lastCtx = nextCtx;
+        if (matches > requiredUpperBound) {
+          return new Failure(`Expected an upper bound of ${requiredUpperBound} but matched ${matches} times`);
+        }
+      } 
+    } while (success);
+    if (matches >= requiredLowerBound) {
+      return Outcome.of({ value: values, ctx: lastCtx });
+    }
+    return new Failure(`Expected a lower bound of ${requiredLowerBound} but matched ${matches} times`);
+  });
 }

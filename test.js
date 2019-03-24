@@ -1,5 +1,5 @@
 import test from 'ava';
-import Parser, { item, empty, satisfy, lift2, sequence, disj, infixl, infixr } from './index';
+import Parser, { item, empty, satisfy, lift2, sequence, disj, infixl, infixr, token, regex } from './index';
 
 test('item() from array-likes', t => {
   t.true(item().parse('123').success);
@@ -81,20 +81,41 @@ test('Parser#many', t => {
   );
 });
 
-test('many1', t => {
-  let one = satisfy(x => x === 1).map(x => '' + x);
+test('times', t => {
+  let one = satisfy(x => x === 1);
 
-  t.false(one.many1().parse([2]).success);
+  t.false(one.times(1).parse([]).success);
+  t.false(one.times(1).parse([1, 1]).success);
 
-  t.deepEqual(
-    one.many1().parse([1, 2]).result.value, 
-    ['1']
-  );
+  t.true(one.times(1).parse([1]).success);
 
-  t.deepEqual(
-    one.many1().parse([1, 1, 2]).result.value, 
-    ['1', '1']
-  );
+  t.false(one.times(1, 3).parse([]).success);
+  t.false(one.times(1, 3).parse([1, 1, 1, 1]).success);
+
+  t.true(one.times(1, 3).parse([1]).success);
+  t.true(one.times(1, 3).parse([1, 1]).success);
+  t.true(one.times(1, 3).parse([1, 1, 1]).success);
+})
+
+test('atMost', t => {
+  let one = satisfy(x => x === 1);
+
+  t.false(one.atMost(2).parse([1, 1, 1]).success)
+
+  t.true(one.atMost(2).parse([1, 1]).success)
+  t.true(one.atMost(2).parse([1]).success)
+  t.true(one.atMost(2).parse([]).success)
+});
+
+test('atLeast', t => {
+  let one = satisfy(x => x === 1);
+
+  t.false(one.atLeast(2).parse([]).success)
+  t.false(one.atLeast(2).parse([1]).success)
+
+  t.true(one.atLeast(2).parse([1, 1]).success)
+  t.true(one.atLeast(2).parse([1, 1, 1]).success)
+
 });
 
 test('sepBy1', t => {
@@ -225,5 +246,55 @@ test('infixr', t => {
   t.is(
     infixr(num, minus.map(() => (x, y) => x - y)).parse([0, '-', 1, '-', 1]).result.value,
     0
+  );
+})
+
+test('CSV parser', t => {
+  let comma = token(',');
+  let dquote = token('"');
+  let textdata = regex(/[\u{20}-\u{21}]|[\u{23}-\u{2B}]|[\u{2D}-\u{7E}]/u);
+  let nonescaped = textdata.many().map(chars => chars.join(''));
+
+  let escaped = sequence(
+    dquote,
+    disj(
+      dquote.then(dquote),
+      textdata,
+      comma,
+    ).many().map(chars => chars.join('')),
+    dquote,
+  ).map(([q1, f, q2]) => f);
+
+  let field = escaped.or(nonescaped);
+
+
+  let record = sequence(
+    field,
+    sequence(comma, field).map(([c, f]) => f).many(),
+  );
+
+  t.deepEqual(
+    record.parse('foo,bar').result.value,
+    ['foo', 'bar']
+  );
+
+  t.deepEqual(
+    record.parse('"foo","bar"').result.value,
+    ['foo', 'bar']
+  );
+
+  t.deepEqual(
+    record.parse('"foo","bar,baz"').result.value,
+    ['foo', 'bar,baz']
+  );
+
+  t.deepEqual(
+    record.parse('""""').result.value,
+    ['"']
+  );
+  
+  t.deepEqual(
+    record.parse('"foo","bar,baz"""').result.value,
+    ['foo', 'bar,baz"']
   );
 })
