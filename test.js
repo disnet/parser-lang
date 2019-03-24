@@ -1,5 +1,5 @@
 import test from 'ava';
-import Parser, { item, empty, satisfy, many, many1, sepBy1, sepBy, lift2, sequence, disj, infixl, infixr } from './index';
+import Parser, { item, empty, satisfy, lift2, sequence, disj, infixl, infixr } from './index';
 
 test('item() from array-likes', t => {
   t.true(item().parse('123').success);
@@ -61,22 +61,22 @@ test('Parser#alt', t => {
   t.false(two.alt(one).parse([3]).success);
 })
 
-test('many', t => {
+test('Parser#many', t => {
   let one = satisfy(x => x === 1).map(x => '' + x);
 
-  t.true(many(one).parse([2]).success);
+  t.true(one.many().parse([2]).success);
   t.deepEqual(
-    many(one).parse([2]).result.value, 
+    one.many().parse([2]).result.value, 
     []
   );
 
   t.deepEqual(
-    many(one).parse([1, 2]).result.value, 
+    one.many().parse([1, 2]).result.value, 
     ['1']
   );
 
   t.deepEqual(
-    many(one).parse([1, 1, 2]).result.value, 
+    one.many().parse([1, 1, 2]).result.value, 
     ['1', '1']
   );
 });
@@ -84,15 +84,15 @@ test('many', t => {
 test('many1', t => {
   let one = satisfy(x => x === 1).map(x => '' + x);
 
-  t.false(many1(one).parse([2]).success);
+  t.false(one.many1().parse([2]).success);
 
   t.deepEqual(
-    many1(one).parse([1, 2]).result.value, 
+    one.many1().parse([1, 2]).result.value, 
     ['1']
   );
 
   t.deepEqual(
-    many1(one).parse([1, 1, 2]).result.value, 
+    one.many1().parse([1, 1, 2]).result.value, 
     ['1', '1']
   );
 });
@@ -101,21 +101,21 @@ test('sepBy1', t => {
   let one = satisfy(x => x === 1).map(x => '' + x);
   let comma = satisfy(x => x === ',');
 
-  t.false(sepBy1(one, comma).parse([]).success);
-  t.false(sepBy1(one, comma).parse([1]).success);
-  t.false(sepBy1(one, comma).parse([1, 1]).success);
+  t.false(one.sepBy1(comma).parse([]).success);
+  t.false(one.sepBy1(comma).parse([1]).success);
+  t.false(one.sepBy1(comma).parse([1, 1]).success);
 
-  t.true(sepBy1(one, comma).parse([1, ',', 1]).success);
+  t.true(one.sepBy1(comma).parse([1, ',', 1]).success);
   t.deepEqual(
-    sepBy1(one, comma).parse([1, ',', 1]).result.value,
+    one.sepBy1(comma).parse([1, ',', 1]).result.value,
     ['1', '1']
   );
   t.deepEqual(
-    sepBy1(one, comma).parse([1, ',', 1, ',']).result.value,
+    one.sepBy1(comma).parse([1, ',', 1, ',']).result.value,
     ['1', '1']
   );
   t.deepEqual(
-    sepBy1(one, comma).parse([1, ',', 1, ',', 1]).result.value,
+    one.sepBy1(comma).parse([1, ',', 1, ',', 1]).result.value,
     ['1', '1', '1']
   );
 });
@@ -124,33 +124,33 @@ test('sepBy', t => {
   let one = satisfy(x => x === 1).map(x => '' + x);
   let comma = satisfy(x => x === ',');
 
-  t.true(sepBy(one, comma).parse([]).success);
+  t.true(one.sepBy(comma).parse([]).success);
   t.deepEqual(
-    sepBy(one, comma).parse([]).result.value,
+    one.sepBy(comma).parse([]).result.value,
     []
   );
-  t.true(sepBy(one, comma).parse([1]).success);
+  t.true(one.sepBy(comma).parse([1]).success);
   t.deepEqual(
-    sepBy(one, comma).parse([1]).result.value,
+    one.sepBy(comma).parse([1]).result.value,
     []
   );
-  t.true(sepBy(one, comma).parse([1, 1]).success);
+  t.true(one.sepBy(comma).parse([1, 1]).success);
   t.deepEqual(
-    sepBy(one, comma).parse([1, 1]).result.value,
+    one.sepBy(comma).parse([1, 1]).result.value,
     []
   );
 
-  t.true(sepBy(one, comma).parse([1, ',', 1]).success);
+  t.true(one.sepBy(comma).parse([1, ',', 1]).success);
   t.deepEqual(
-    sepBy(one, comma).parse([1, ',', 1]).result.value,
+    one.sepBy(comma).parse([1, ',', 1]).result.value,
     ['1', '1']
   );
   t.deepEqual(
-    sepBy(one, comma).parse([1, ',', 1, ',']).result.value,
+    one.sepBy(comma).parse([1, ',', 1, ',']).result.value,
     ['1', '1']
   );
   t.deepEqual(
-    sepBy(one, comma).parse([1, ',', 1, ',', 1]).result.value,
+    one.sepBy(comma).parse([1, ',', 1, ',', 1]).result.value,
     ['1', '1', '1']
   );
 });

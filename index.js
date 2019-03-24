@@ -142,6 +142,38 @@ export default class Parser {
           .chain(({ value, ctx }) => f(value).parse(ctx))
     );
   }
+
+
+  // ret: Parser<Array<A>, Context>
+  many() {
+    return this.chain(x => 
+      this.many().chain(xs => Parser.of(xs.concat(x)))
+    ).alt(Parser.of([]));
+  }
+
+  // ret: Parser<Array<A>, Context>
+  many1() {
+    return this.chain(x => 
+      this.many().chain(xs => Parser.of(xs.concat(x)))
+    );
+  }
+
+  // sep: Parser<B, Context>
+  // ret: Parser<Array<A>, Context>
+  sepBy1(sep) {
+    return this.chain(x => 
+      sep.chain(() => this.chain(y => Parser.of(y)))
+        .many1()
+        .chain(xs => Parser.of(xs.concat(x)))
+    );
+  }
+
+  // sep: Parser<B, Context>
+  // ret: Parser<Array<A>, Context>
+  sepBy(sep) {
+    return this.sepBy1(sep).alt(Parser.of([]));
+  }
+
 }
 
 
@@ -220,38 +252,7 @@ export function satisfy(f, failMsg = 'Did not satisfy predicate') {
   );
 }
 
-// parser: Parser<A, Context>
-// ret: Parser<Array<A>, Context>
-export function many(parser) {
-  return parser.chain(x => 
-    many(parser).chain(xs => Parser.of(xs.concat(x)))
-  ).alt(Parser.of([]));
-}
 
-// parser: Parser<A, Context>
-// ret: Parser<Array<A>, Context>
-export function many1(parser) {
-  return parser.chain(x => 
-    many(parser).chain(xs => Parser.of(xs.concat(x)))
-  );
-}
-
-// parser: Parser<A, Context>
-// sep: Parser<B, Context>
-// ret: Parser<Array<A>, Context>
-export function sepBy1(parser, sep) {
-  return parser.chain(x => 
-    many1(sep.chain(() => parser.chain(y => Parser.of(y))))
-      .chain(xs => Parser.of(xs.concat(x)))
-  );
-}
-
-// parser: Parser<A, Context>
-// sep: Parser<B, Context>
-// ret: Parser<Array<A>, Context>
-export function sepBy(parser, sep) {
-  return sepBy1(parser, sep).alt(Parser.of([]));
-}
 
 // f: (A, B) => C
 // ret: (Parser<A, Context>, Parser<B, Context>) => Parser<C, Context>
