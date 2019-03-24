@@ -115,8 +115,8 @@ export default class Parser {
   chain(f) {
     return new Parser(ctx => 
       this.parse(ctx)
-          .map(({ value, ctx }) => Parser.makeSuccess(f(value), ctx))
-          .chain(({ value: parser, ctx }) => parser.parse(ctx))
+          .map(({ value, ctx }) => ({ value: f(value), ctx }))
+          .chain(({ value, ctx }) => value.parse(ctx))
     );
   }
 }
