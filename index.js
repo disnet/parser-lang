@@ -1,9 +1,15 @@
-function mustImplement() { throw new Error('Must implement in base class'); }
+function mustImplement() { throw new Error('Must implement'); }
 
-class IndexedArray {
-  constructor(array, index) {
-    this.array = array;
-    this.index = index;
+function ltAssoc(assoc, l, r) {
+  switch(assoc) {
+    case 'left': 
+      return l < r;
+    case 'right':
+      return r <= l;
+    case 'prefix':
+      return r <= l;
+    default:
+      throw new Error(`Unimplemented association ${assoc}`);
   }
 }
 
@@ -189,6 +195,80 @@ export default class Parser {
     return this.sepBy1(sep).alt(Parser.of([]));
   }
 
+  result(value) {
+    return this.map(() => value);
+  }
+
+  // ops: Array<{ 
+  //   type: 'left' | 'right' | 'prefix'
+  //   prec: number, 
+  //   action: A => B | (A, A) => B 
+  // }>
+  // ret: Parser<B, Context>
+  operators(ops) {
+    let infixOps = alternatives(...ops
+      .filter(op => op.type === 'left' || op.type === 'right')
+      .reduce((acc, op) => acc.concat(op.parser.result({
+        assoc: op.type,
+        prec: op.prec,
+        action: op.action,
+      })), []));
+    let prefixOps = alternatives(...ops
+      .filter(op => op.type === 'prefix')
+      .reduce((acc, op) => acc.concat(op.parser.result({
+        assoc: op.type,
+        prec: op.prec,
+        action: op.action,
+      })), []));
+
+    return new Parser(ctx => {
+      let stack = [];
+      let prec = 0;
+      let assoc = 'left';
+      let action = x => x;
+      let nextCtx = ctx;
+      while (true) {
+        let outcome = this.parse(nextCtx);
+        if (!outcome.success) {
+          if (prefixOps != null) {
+            let opOutcome = prefixOps.parse(nextCtx);
+            if (opOutcome.success && opOutcome.result.value.assoc === 'prefix') {
+              stack.push({ prec, assoc, action });
+              assoc = opOutcome.result.value.assoc; 
+              prec = opOutcome.result.value.prec; 
+              action = opOutcome.result.value.action; 
+              nextCtx = opOutcome.result.ctx;
+              continue;
+            } 
+          }
+          return new Failure('Did not match item in operator');
+        }
+
+        let opOutcome = infixOps.parse(outcome.result.ctx);
+        if (opOutcome.success) {
+          if (ltAssoc(assoc, prec, opOutcome.result.value.prec)) {
+            stack.push({ prec, assoc, action });
+            prec = opOutcome.result.value.prec;
+            assoc = opOutcome.result.value.assoc;
+            action = opOutcome.result.value.action.bind(null, outcome.result.value);
+          } else {
+            let left = action(outcome.result.value);
+            prec = opOutcome.result.value.prec;
+            assoc = opOutcome.result.value.assoc;
+            action = opOutcome.result.value.action.bind(null, left);
+          }
+          nextCtx = opOutcome.result.ctx;
+        } else {
+          let value = action(outcome.result.value);
+          while(stack.length > 0) {
+            ({ action } = stack.pop());
+            value = action(value);
+          }
+          return Outcome.of({ value, ctx: nextCtx });
+        }
+      }
+    });
+  }
 }
 
 
@@ -286,25 +366,8 @@ export function sequence(...parsers) {
 
 // ...parser: Parser<A, Context>
 // ret: Parser<A, Context>
-export function disj(...parser) {
-  return parser.reduce((acc, p) => acc.alt(p));
-}
-
-// parser: Parser<A, Context>
-// op: Parser<(A, A) => A, Context>
-// ret: Parser<A, Context>
-export function infixl(parser, op) {
-  function rest(x) {
-    return op.chain(f => parser.chain(y => rest(f(x, y)))).alt(Parser.of(x));
-  }
-  return parser.chain(rest);
-}
-
-// parser: Parser<A, Context>
-// op: Parser<(A, A) => A, Context>
-// ret: Parser<A, Context>
-export function infixr(parser, op) {
-  return parser.chain(x => op.chain(f => infixr(parser, op).chain(y => Parser.of(f(x, y)))).alt(Parser.of(x)));
+export function alternatives(...parser) {
+  return parser.reduce((acc, p) => acc.alt(p), Parser.zero());
 }
 
 export function token(ch) {

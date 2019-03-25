@@ -1,5 +1,5 @@
 import test from 'ava';
-import Parser, { item, empty, satisfy, lift2, sequence, disj, infixl, infixr, token, regex } from './index';
+import Parser, { item, empty, satisfy, lift2, sequence, alternatives, infixl, infixr, token, regex } from './index';
 
 test('item() from array-likes', t => {
   t.true(item().parse('123').success);
@@ -205,49 +205,110 @@ test('sequence', t => {
   );
 })
 
-test('disj', t => {
+test('alternatives', t => {
   let one = satisfy(x => x === 1).map(x => '' + x);
   let two = satisfy(x => x === 2).map(x => '' + x);
 
-  t.false(disj(one, two).parse([]).success);
-  t.false(disj(one, two).parse([3]).success);
-  t.false(disj(one, two).parse([3, 1]).success);
+  t.false(alternatives(one, two).parse([]).success);
+  t.false(alternatives(one, two).parse([3]).success);
+  t.false(alternatives(one, two).parse([3, 1]).success);
 
-  t.true(disj(one, two).parse([1]).success);
+  t.true(alternatives(one, two).parse([1]).success);
   t.deepEqual(
-    disj(one, two).parse([1]).result.value,
+    alternatives(one, two).parse([1]).result.value,
     '1'
   );
   t.deepEqual(
-    disj(one, two).parse([2]).result.value,
+    alternatives(one, two).parse([2]).result.value,
     '2'
   );
   t.deepEqual(
-    disj(one, two).parse([2, 1]).result.value,
+    alternatives(one, two).parse([2, 1]).result.value,
     '2'
   );
 
 });
 
-test('infixl', t => {
-  let minus = satisfy(x => x === '-');
-  let num = satisfy(x => typeof x === 'number');
+test('operator', t => {
+  let number = satisfy(x => typeof x === 'number');
+  let basicOperators = [{
+    type: 'left',
+    prec: 2,
+    parser: token('+'),
+    action(left, right) {
+      return left + right;
+    }
+  }, {
+    type: 'left',
+    prec: 3,
+    parser: token('*'),
+    action(left, right) {
+      return left * right;
+    }
+  }, {
+    type: 'prefix',
+    prec: 1,
+    parser: token('-'),
+    action(operand) {
+      return -operand;
+    }
+  }, {
+    type: 'right',
+    prec: 3,
+    parser: token('/'),
+    action(left, right) {
+      return left / right;
+    }
+  }]
 
+  t.false(number.operators(basicOperators).parse([]).success);
+  t.false(number.operators(basicOperators).parse(['1']).success);
+
+  t.true(number.operators(basicOperators).parse([1]).success);
   t.is(
-    infixl(num, minus.map(() => (x, y) => x - y)).parse([0, '-', 1, '-', 1]).result.value,
-    -2
+    number.operators(basicOperators).parse([1, '+', 2]).result.value,
+    3
+  );
+  t.is(
+    number.operators(basicOperators).parse([1, '+', 2, '*', 3]).result.value,
+    7
+  );
+  t.is(
+    number.operators(basicOperators).parse([2, '*', 3, '+', 1]).result.value,
+    7
+  );
+  t.is(
+    number.operators(basicOperators).parse([10, '/', 5, '/', 2]).result.value,
+    4
+  );
+  t.is(
+    number.operators(basicOperators).parse([1, '+', '-', 2]).result.value,
+    -1
+  );
+  t.is(
+    number.operators(basicOperators).parse(['-', 2, '+', 1]).result.value,
+    -1
+  );
+  t.is(
+    number.operators([{
+      type: 'left',
+      prec: 2,
+      parser: token('+'),
+      action(left, right) {
+        return left + right;
+      }
+    }, {
+      type: 'prefix',
+      prec: 3, // bigger than plus prec
+      parser: token('-'),
+      action(operand) {
+        return -operand;
+      }
+
+    }]).parse(['-', 2, '+', 1]).result.value,
+    -3
   );
 });
-
-test('infixr', t => {
-  let minus = satisfy(x => x === '-');
-  let num = satisfy(x => typeof x === 'number');
-
-  t.is(
-    infixr(num, minus.map(() => (x, y) => x - y)).parse([0, '-', 1, '-', 1]).result.value,
-    0
-  );
-})
 
 test('CSV parser', t => {
   let comma = token(',');
@@ -257,7 +318,7 @@ test('CSV parser', t => {
 
   let escaped = sequence(
     dquote,
-    disj(
+    alternatives(
       dquote.then(dquote),
       textdata,
       comma,
