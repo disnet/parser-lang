@@ -1,20 +1,29 @@
 {
   "name": "parser-combinators",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "index.js",
   "scripts": {
+    "lint": "prettier --check src/*.js",
     "test": "ava"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ava": "^1.3.1",
+    "ava": "^2.1.0",
     "esm": "^3.2.20"
   },
   "ava": {
-		"require": [
-			"esm"
-		]
-	}
+    "require": [
+      "esm"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "devDependencies": {
+    "prettier": "1.17.1"
+  }
 }
