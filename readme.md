@@ -35,11 +35,11 @@ npm install parser-lang
 
 ## Documentation
 
-- [Tutorial](./docs/tutorial)
-- [API Reference](./docs/api-reference)
+- [Tutorial](./docs/tutorial.md)
+- [API Reference](./docs/api-reference.md)
 
 ## Related Projects/Papers
 
-- [Parsimmon](https://github.com/jneen/parsimmon) - a JavaScript parser combinator library. ParserLang is heavily inspired by Parsimmon. Parsimmon is more coupled to parsing strings (ParserLang uses the [Context protocol](./docs/api-reference) to support a variety of input types) but also supports a wider variety of JavaScript runtimes.
+- [Parsimmon](https://github.com/jneen/parsimmon) - a JavaScript parser combinator library. ParserLang is heavily inspired by Parsimmon. Parsimmon is more coupled to parsing strings (ParserLang uses the [Context protocol](./docs/api-reference.md#context) to support a variety of input types) but also supports a wider variety of JavaScript runtimes.
 - [Parsec](http://hackage.haskell.org/package/parsec) - a Haskell parser combinator library
 - [Monadic Parser Combinators](http://www.cs.nott.ac.uk/~pszgmh/monparsing.pdf) - one of the seminal papers describing parser combinators
