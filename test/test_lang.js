@@ -245,3 +245,21 @@ test('lang with multiple maps that associate to the left', t => {
 
   t.deepEqual(a.tryParse('a'), 'ab');
 });
+
+test.only('calc language', t => {
+  const { multExpr } = lang`
+    num = /[0-9]+/ > ${ch => parseInt(ch, 10)};
+
+    addExpr = num '+' multExpr > ${([left, op, right]) => left + right}
+            | num ;
+
+    multExpr = addExpr '*' multExpr > ${([left, op, right]) => left * right}
+            | addExpr ;
+  `;
+
+  t.deepEqual(multExpr.tryParse('1'), 1);
+  t.deepEqual(multExpr.tryParse('12'), 12);
+  t.deepEqual(multExpr.tryParse('1+1'), 2);
+  t.deepEqual(multExpr.tryParse('1+1*2'), 3);
+  t.deepEqual(multExpr.tryParse('1*1+2'), 3);
+});

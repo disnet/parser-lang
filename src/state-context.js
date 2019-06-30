@@ -16,11 +16,7 @@ export default class StateContext {
   }
 
   next() {
-    return this[Context.next]();
-  }
-
-  [Context.next]() {
-    return this.context[Context.next]();
+    return this.context.next();
   }
 
   [Context.regex](re) {

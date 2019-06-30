@@ -328,7 +328,7 @@ export function succeed(value) {
 
 export function empty() {
   return new Parser(ctx => {
-    let nextCtx = ctx[Context.clone]();
+    let nextCtx = ctx[Context.clone]()[Symbol.iterator]();
     let result = nextCtx.next();
     if (result.done) {
       return Outcome.of({
@@ -343,8 +343,8 @@ export function empty() {
 // ret: Parser<A, Context>
 export function item() {
   return new Parser(ctx => {
-    let nextCtx = ctx[Context.clone]();
-    let result = nextCtx[Context.next]();
+    let nextCtx = ctx[Context.clone]()[Symbol.iterator]();
+    let result = nextCtx.next();
     if (result.done) {
       return new Failure('list is empty');
     }
@@ -357,7 +357,7 @@ export function item() {
 
 export function string(s) {
   return new Parser(ctx => {
-    let nextCtx = ctx[Context.clone]();
+    let nextCtx = ctx[Context.clone]()[Symbol.iterator]();
     for (let toMatch of s) {
       let x = nextCtx.next();
       if (x.done || x.value !== toMatch)
@@ -437,17 +437,5 @@ export function regex(rawRegex) {
       value: result.value,
       ctx: nextCtx,
     });
-  });
-}
-
-export function codePointRange(low, high) {
-  return satisfy(c => {
-    if (typeof c.codePointAt !== 'function') return false;
-    let codePoint = c.codePointAt(0);
-    if (codePoint == null) return false;
-    if (Array.isArray(low)) {
-      return low.some(([low, high]) => codePoint >= low && codePoint <= high);
-    }
-    return codePoint >= low && codePoint <= high;
   });
 }

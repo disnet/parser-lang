@@ -1,2 +1,2 @@
 require = require('esm')(module);
-module.exports = require('./src/parser');
+module.exports = require('./main');

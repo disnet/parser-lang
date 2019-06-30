@@ -1,5 +1,4 @@
 const cloneSymbol = Symbol('Context.clone');
-const nextSymbol = Symbol('Context.next');
 const regexSymbol = Symbol('Context.regex');
 
 export default class Context {
@@ -26,10 +25,6 @@ export default class Context {
   }
 
   next() {
-    return this[nextSymbol]();
-  }
-
-  [nextSymbol]() {
     if (this.array.length > 0 && this.index < this.array.length) {
       return {
         done: false,
@@ -72,5 +67,4 @@ export default class Context {
 }
 
 Context.clone = cloneSymbol;
-Context.next = nextSymbol;
 Context.regex = regexSymbol;

@@ -4,6 +4,7 @@
   "private": true,
   "description": "",
   "main": "index.js",
+  "module": "main.js",
   "scripts": {
     "lint": "prettier --check src/*.js",
     "test": "ava"
