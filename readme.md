@@ -7,7 +7,7 @@ ParserLang is parser combinator library. It lets you make parsers by combining o
 Its primary superpower is the ability to define parsers declaratively with template literals:
 
 ```js
-import lang from 'parser-lang/lang';
+import { lang } from 'parser-lang';
 
 let { calc } = lang`
   num = /[0-9]+/ > ${ch => parseInt(ch, 10)};

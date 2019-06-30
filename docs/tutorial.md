@@ -105,7 +105,7 @@ sequence(char('a'), char('b'))
 One downside of defining parser combinators using JavaScript functions and methods is that it can become difficult to read as the parsers grow in complexity. The way ParserLang approaches handling this problem is by allowing you to define your parsers using a declarative language in template literals:
 
 ```js
-import lang from 'parser-lang/lang';
+import { lang } from 'parser-lang';
 
 let { a } = lang`
   a = 'a';

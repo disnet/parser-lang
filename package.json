@@ -1,16 +1,16 @@
 {
-  "name": "parser-combinators",
-  "version": "1.0.0",
-  "private": true,
-  "description": "",
+  "name": "parser-lang",
+  "version": "0.1.0",
+  "description": "A parser combinator library for JavaScript with declarative definition power",
   "main": "index.js",
   "module": "main.js",
+  "keywords": ["parsing", "parse", "parser combinators", "template literals"],
   "scripts": {
     "lint": "prettier --check src/*.js",
     "test": "ava"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Tim Disney",
+  "license": "MIT",
   "dependencies": {
     "ava": "^2.1.0",
     "esm": "^3.2.20"

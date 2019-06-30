@@ -60,7 +60,7 @@ An `Outcome` represents a `Success` or a `Failure` (for those coming from a func
 A `ParseResult` is an object of shape `{ value, ctx }` that holds the resulting value along with the new `Context`.
 
 ```js
-import { Outcome } from 'parser-lang/outcome';
+import { Outcome } from 'parser-lang';
 
 let p = new Parser(ctx => {
   return Outcome.of({
@@ -566,7 +566,7 @@ Return the original outcome after applying `f` to the value for its effects.
 ### Context
 
 ```js
-import Context from 'parser-lang/context`;
+import { Context } from 'parser-lang`;
 ```
 
 The **context** protocol defines a standard way for mutable iterable objects to be used in an "immutable" way by allowing consumers to make clones before performing mutations.
