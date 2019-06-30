@@ -1,4 +1,4 @@
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v1.4%20adopted-ff69b4.svg)](code-of-conduct.md)
+[![npm version](https://badge.fury.io/js/parser-lang.svg)](https://badge.fury.io/js/parser-lang) [![Build Status](https://travis-ci.org/disnet/parser-lang.svg?branch=master)](https://travis-ci.org/disnet/parser-lang) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v1.4%20adopted-ff69b4.svg)](code-of-conduct.md)
 
 # ParserLang
 
