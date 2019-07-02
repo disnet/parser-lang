@@ -1,5 +1,6 @@
 import test from 'ava';
 import lang from '../src/lang';
+import { empty } from '../src/parser';
 
 test('lang with a single token literal rule', t => {
   let { a } = lang`
@@ -195,6 +196,15 @@ test('lang with a satisfies hole', t => {
   t.throws(() => a.tryParse(''));
 });
 
+test('lang with a parser hole', t => {
+  let { a } = lang`
+    a = @${empty()};
+  `;
+
+  t.deepEqual(a.tryParse(''), void 0);
+  t.throws(() => a.tryParse('b'));
+});
+
 test('lang with a satisfies hole and a sequence', t => {
   let { a } = lang`
     a = !${ch => ch === 'a'} 'b';
@@ -246,7 +256,7 @@ test('lang with multiple maps that associate to the left', t => {
   t.deepEqual(a.tryParse('a'), 'ab');
 });
 
-test.only('calc language', t => {
+test('calc language', t => {
   const { multExpr } = lang`
     num = /[0-9]+/ > ${ch => parseInt(ch, 10)};
 
