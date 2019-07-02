@@ -114,7 +114,8 @@ const punctuator = alternatives(
   char('+'),
   char(';'),
   char('!'),
-  char('>')
+  char('>'),
+  char('@')
 );
 
 export const lex = sequence(
@@ -152,6 +153,7 @@ const closeParenToken = isPunctuatorToken(')');
 const semicolonToken = isPunctuatorToken(';');
 const bangToken = isPunctuatorToken('!');
 const rarrowToken = isPunctuatorToken('>');
+const atToken = isPunctuatorToken('@');
 
 function getState(f) {
   return new Parser(ctx => {
@@ -179,6 +181,10 @@ const satisfiesDefinition = bangToken
   .then(holeToken)
   .map(({ value: satFunc }) => satisfy(satFunc));
 
+const parserHoleDefinition = atToken
+  .then(holeToken)
+  .map(({ value: parser }) => parser);
+
 const regexDefinition = regexToken.map(({ value: { body, flags } }) =>
   regex(new RegExp(body, flags))
 );
@@ -189,6 +195,7 @@ const primDefinition = lazy(() =>
     identDefinition,
     regexDefinition,
     satisfiesDefinition,
+    parserHoleDefinition,
     sequence(openParenToken, definition, closeParenToken).map(snd)
   )
 );

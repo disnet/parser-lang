@@ -127,6 +127,7 @@ The possible syntax for `[parser]` are:
 - `[name]` a parser defined in `[name]` rule
 - `([parser])` group parser (to handle precedence)
 - `!${pred}` a parser that satisfies the predicate `pred`
+- `@${parser}` a parser that satisfies the parser `parser`
 - `[parser_1] | ... | [parser_n]` a parser that tries each `[parser_i]` and matches the first one that succeeds
 - `[parser_1] [parser_2] ...` a parser that matches each `[parser_i]` in sequence
 - `[parser]*` a parser that matches `[parser]` zero or more times
