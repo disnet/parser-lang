@@ -8,6 +8,7 @@ import Parser, {
   lazy,
   succeed,
   string,
+  item,
 } from './parser';
 import StateContext from './state-context';
 import ContextWithHoles from './context-with-holes';
@@ -84,7 +85,8 @@ const escapedStringCharacter = char('\\').then(
     char('v').result('\v'),
     char('u').then(
       alternatives(sequence(char('{'), hexDigits, char('}')).map(snd))
-    )
+    ),
+    item()
   )
 );
 
