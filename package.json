@@ -1,6 +1,6 @@
 {
   "name": "parser-lang",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A parser combinator library for JavaScript with declarative superpowers",
   "main": "index.js",
   "module": "main.js",
