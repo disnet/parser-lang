@@ -23,15 +23,19 @@ test('lang with a multi char single token literal rule', t => {
 });
 
 test('lang with a string with escape sequences', t => {
-  let { a, b, c } = lang`
+  let { a, b, c, d, e } = lang`
   a = '\n';
   b = '\t';
   c = '\u{ffff}';
+  d = '\\';
+  e = '\z';
   `;
 
   t.deepEqual(a.tryParse('\n'), '\n');
   t.deepEqual(b.tryParse('\t'), '\t');
   t.deepEqual(c.tryParse('\u{ffff}'), '\u{ffff}');
+  t.deepEqual(d.tryParse('\\'), '\\');
+  t.deepEqual(e.tryParse('z'), 'z');
   t.throws(() => a.tryParse('f'));
   t.throws(() => a.tryParse(''));
 });
