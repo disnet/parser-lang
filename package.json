@@ -16,7 +16,6 @@
     "url": "https://github.com/disnet/parser-lang.git"
   },
   "dependencies": {
-    "ava": "^2.1.0",
     "esm": "^3.2.20"
   },
   "ava": {
@@ -29,6 +28,7 @@
     "trailingComma": "es5"
   },
   "devDependencies": {
+    "ava": "^2.1.0",
     "prettier": "1.17.1"
   }
 }
