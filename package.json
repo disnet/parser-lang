@@ -4,7 +4,12 @@
   "description": "A parser combinator library for JavaScript with declarative superpowers",
   "main": "index.js",
   "module": "main.js",
-  "keywords": ["parsing", "parse", "parser combinators", "template literals"],
+  "keywords": [
+    "parsing",
+    "parse",
+    "parser combinators",
+    "template literals"
+  ],
   "scripts": {
     "lint": "prettier --check src/*.js",
     "test": "ava"
@@ -28,7 +33,7 @@
     "trailingComma": "es5"
   },
   "devDependencies": {
-    "ava": "^2.1.0",
+    "ava": "^2.2.0",
     "prettier": "1.17.1"
   }
 }
