@@ -1,5 +1,5 @@
-import { Outcome, Failure } from './outcome';
-import Context from './context';
+import { Outcome, Failure } from './outcome.mjs';
+import Context from './context.mjs';
 
 export default class Parser {
   // action: Context => Outcome<A>

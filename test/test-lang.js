@@ -1,6 +1,6 @@
 import test from 'ava';
-import lang from '../src/lang';
-import { empty, succeed } from '../src/parser';
+import lang from '../src/lang.mjs';
+import { empty, succeed } from '../src/parser.mjs';
 
 test('lang with a single token literal rule', t => {
   let { a } = lang`

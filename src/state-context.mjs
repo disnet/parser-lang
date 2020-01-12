@@ -1,4 +1,4 @@
-import Context from './context';
+import Context from './context.mjs';
 
 const stateSymbol = Symbol('StateContext.state');
 export default class StateContext {

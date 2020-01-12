@@ -2,8 +2,8 @@
   "name": "parser-lang",
   "version": "0.3.0",
   "description": "A parser combinator library for JavaScript with declarative superpowers",
-  "main": "index.js",
-  "module": "main.js",
+  "type": "module",
+  "main": "main.mjs",
   "keywords": [
     "parsing",
     "parse",
@@ -11,8 +11,7 @@
     "template literals"
   ],
   "scripts": {
-    "lint": "prettier --check src/*.js",
-    "test": "ava --tap"
+    "test": "ava"
   },
   "author": "Tim Disney",
   "license": "MIT",
@@ -20,20 +19,11 @@
     "type": "git",
     "url": "https://github.com/disnet/parser-lang.git"
   },
-  "dependencies": {
-    "esm": "^3.2.20"
-  },
-  "ava": {
-    "require": [
-      "esm"
-    ]
-  },
   "prettier": {
     "singleQuote": true,
     "trailingComma": "es5"
   },
   "devDependencies": {
-    "ava": "^2.2.0",
-    "prettier": "1.17.1"
+    "ava": "^3.8.0"
   }
 }

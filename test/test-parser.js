@@ -8,7 +8,7 @@ import Parser, {
   alternatives,
   char,
   string,
-} from '../src/parser';
+} from '../src/parser.mjs';
 
 test('item() from array-likes', t => {
   t.true(item().parse('123').success);

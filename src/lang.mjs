@@ -9,10 +9,10 @@ import Parser, {
   succeed,
   string,
   item,
-} from './parser';
-import StateContext from './state-context';
-import ContextWithHoles from './context-with-holes';
-import { Outcome, Failure } from './outcome';
+} from './parser.mjs';
+import StateContext from './state-context.mjs';
+import ContextWithHoles from './context-with-holes.mjs';
+import { Outcome, Failure } from './outcome.mjs';
 
 const snd = ([, x]) => x;
 

@@ -1,6 +1,6 @@
 import test from 'ava';
-import ContextWithHoles from '../src/context-with-holes';
-import Context from '../src/context';
+import ContextWithHoles from '../src/context-with-holes.mjs';
+import Context from '../src/context.mjs';
 
 test('no holes', t => {
   let c = new ContextWithHoles(['abc'], []);

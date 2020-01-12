@@ -1,4 +1,4 @@
-import Context from './context';
+import Context from './context.mjs';
 
 const holeSymbol = Symbol('ContextWithHoles.hole');
 export default class ContextWithHoles {
