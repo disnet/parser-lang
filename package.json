@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "lint": "prettier --check src/*.js",
-    "test": "ava"
+    "test": "ava --tap"
   },
   "author": "Tim Disney",
   "license": "MIT",

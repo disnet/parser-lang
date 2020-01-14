@@ -1,6 +1,6 @@
 import test from 'ava';
 import lang from '../src/lang';
-import { empty } from '../src/parser';
+import { empty, succeed } from '../src/parser';
 
 test('lang with a single token literal rule', t => {
   let { a } = lang`
@@ -258,6 +258,14 @@ test('lang with multiple maps that associate to the left', t => {
   `;
 
   t.deepEqual(a.tryParse('a'), 'ab');
+});
+
+test('lang with a chain', t => {
+  let { a } = lang`
+    a = 'a' >> ${value => succeed({ value })} ;
+  `;
+
+  t.deepEqual(a.tryParse('a'), { value: 'a' });
 });
 
 test('calc language', t => {
