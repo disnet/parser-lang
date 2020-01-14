@@ -116,6 +116,7 @@ const punctuator = alternatives(
   char('+'),
   char(';'),
   char('!'),
+  string('>>'),
   char('>'),
   char('@')
 );
@@ -155,6 +156,7 @@ const closeParenToken = isPunctuatorToken(')');
 const semicolonToken = isPunctuatorToken(';');
 const bangToken = isPunctuatorToken('!');
 const rarrowToken = isPunctuatorToken('>');
+const chainToken = isPunctuatorToken('>>');
 const atToken = isPunctuatorToken('@');
 
 function getState(f) {
@@ -208,17 +210,17 @@ const baseDefinition = alternatives(
   primDefinition
 );
 
-const sequenceDefinition = alternatives(
-  sequence(
-    alternatives(
-      baseDefinition.atLeast(2).map(defs => sequence(...defs)),
-      baseDefinition
-    ),
-    sequence(rarrowToken, holeToken).many()
-  ).map(([base, maps]) => {
-    return maps.reduce((acc, [, { value: f }]) => acc.map(f), base);
-  })
-)
+const isMapToken = t => t != null && t.type === 'punctuator' && t.value === '>';
+
+const mapDefinition = sequence(
+  alternatives(
+    baseDefinition.atLeast(2).map(defs => sequence(...defs)),
+    baseDefinition
+  ),
+  sequence(alternatives(rarrowToken, chainToken), holeToken).many()
+).map(([base, maps]) => maps.reduce((acc, [t, { value: f }]) => isMapToken(t) ? acc.map(f) : acc.chain(f), base));
+
+const sequenceDefinition = mapDefinition
   .many()
   .map(rest => (rest.length === 1 ? rest[0] : sequence(...rest)));
 

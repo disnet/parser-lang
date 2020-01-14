@@ -133,6 +133,7 @@ The possible syntax for `[parser]` are:
 - `[parser]*` a parser that matches `[parser]` zero or more times
 - `[parser]+` a parser that matches `[parser]` one or more times
 - `[parser] > ${f}` a parser that matches `[parser]` and then `map`s the result with `f`
+- `[parser] >> ${f}` a parser that matches `[parser]` and then `chain`s the result with `f`
 
 For example,
 
